@@ -3,28 +3,160 @@ title: "HW1"
 author: "Omar Jouini"
 date: "2024-11-16"
 output: html_document
+    df_print: paged
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+# Summary
+
+We are going to produce an R package with functions with documentation, error messages, and tests (extra credit). The application is functionality to visualize and process data and estimates on family planning worldwide. Note that we already worked with the estimates in Intermediate R, HW1. Relevant code and functions from that HW are included in this Rmd in the section below, followed by the exercises for this HW. 
+
+
+
+## What to hand in
+
+An R notebook called hw1_exercises.Rmd and associated knitted html that shows the function calls and output as displayed in the hw1 starter Rmd/pdf with example solutions, as well as the link to your GitHub repo.
+
+
+Grading: 20 points
+
+- 15 points for exercise 1
+- 5 points for exercise 2
+
+```{r setup}
+library(tidyverse)
+library(readxl)
+library(testthat)
+library(assertthat)
+library(devtools)
+#knitr::opts_chunk$set(include = FALSE)
+
+setwd("~/Studium/Public Health Studium/5. Semester UMass/R III Course")
+
 ```
 
-## R Markdown
+# Starter code for visualizing family planning estimates (from Intermediate R, HW1)
+In HW1, we worked with table Model-based_estimates_Countries_2019.xlsx from https://www.un.org/en/development/desa/population/publications/dataset/contraception/data/Table_Model-based_estimates_Countries_2019.xlsx#Main, which contains estimates of modern contraceptive use (mCPR) among married women in the sheet "FP Indicators". In this HW, we are using the processed version of this data set stored in est.csv, with 
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+- Country or area = country name
+- iso	= country iso code 
+- Year = the reference year that the estimate refers to 
+- Median = point estimate of modern use among married women, in percentage	
+- L95	U95 = lower and upper bounds of 95% uncertainty intervals, respectively. 
+- L80	U80 = lower and upper bounds of 80% uncertainty intervals, respectively. 
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+In HW1, we wrote code to produce the plot below, which shows mCPR (%) among married women against time in Afghanistan (country iso code 4), lines are median estimates. I name the plotting here plot_cp_hw1 to avoid confusion/conflicts with the function that you will store in your package. 
+```{r}
+est <- read_csv("est.csv")
 ```
 
-## Including Plots
+```{r}
+# note: just adding _hw1 to the function name here to not get confused with the function 
+# that you will add to your package (which will be called plot_cp).
+plot_cp_hw1 <- function(est, iso_code) {
+  est2 <- est %>%
+    filter(iso == iso_code)
+  
+est <- est %>% 
+  rename(iso_country = iso)
 
-You can also embed plots, for example:
+est$iso_country <- as.integer(est$iso_country)
+  
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+  est2 %>%
+    ggplot(aes(x = Year, y = Median)) +
+    geom_line() +
+    geom_smooth(
+      stat = "identity",
+      aes(ymax = U95, ymin = L95)
+    ) +
+    labs(x = "Time", y = "Modern use (%)", title = est2$`Country or area`[1])
+}
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r, include = T}
+plot_cp_hw1(est, iso_code = 4)
+```
+
+
+# HW1 exercises
+
+In HW2, we set up a package and add the plotting function, called `plot_cp'. We will add observed mCPR data (from surveys) and some other functionality to the visualization.
+
+
+## Exercise 1: extend function plot_cp() to also plot observed data
+
+
+The data set csv file contraceptive_use.csv contains observed mCPR values. Relevant variable info is as follows:
+
+- contraceptive_use_modern = observed mCPR 
+- division_numeric_code = country iso code
+- is_in_union == "Y" refers to observations among married women. 
+- (start_date + end_date)/2 is the reference time for the observation. 
+
+Extend the plotting function to produce the plots below, with additional arguments `CI`, which indicates what uncertainty interval to plot, or none uncertainty intervals shown when `CI` is set to be missing. 
+
+The first plot shows mCPR (%) among married women against time in Afghanistan (country iso code 4) as before but with observed data added from contraceptive_use.csv. Dots are observed data, lines are point estimates and the shaded areas represent 95% uncertainty intervals. 
+
+The second plot shows mCPR (%) among married women against time in Afghanistan (country iso code 4) without uncertainty intervals. 
+
+The third plot shows mCPR (%) among married women against time in Kenya (country iso code 404) with the shaded areas representing 80% uncertainty intervals. 
+
+Note that in the example solution, `dat` refers to the processed data set with variables iso, year (referring to reference year), and cp (contraceptive_use_modern * 100). 
+
+```{r}
+dat <-  read_csv("contraceptive_use.csv")
+dat2 <- dat %>% 
+  mutate(ref_time =  (start_date + end_date)/2) %>% 
+  filter(is_in_union == "Y") %>%
+  mutate(contraceptive_use_modern = contraceptive_use_modern * 100)
+
+
+
+plot_cp <- function(est, dat, iso_code, CI = 95) {
+  
+  # Prepare  temp est data to get country
+  est_temp <- est %>%
+    filter(iso_country == iso_code)
+  
+  # Prepare temp observed data
+  dat_temp <- dat2 %>% 
+    filter(division_numeric_code == iso_code)
+  
+  # Start plot with estimates (lines)
+  p_temp <- ggplot() +
+    geom_line(data = est_temp, aes(x = Year, y = Median), color = "blue") +
+    geom_point(data = dat_temp, aes(x = ref_time, y = contraceptive_use_modern), color = "red") +
+    labs(x = "Time", y = "Modern use (%)", title = paste("mCPR in", est_temp$`Country or area`[1]))
+  
+    # Conditional CI layers
+if (!is.na(CI)) {
+  if (CI == 95) {
+    p <- p_temp + geom_ribbon(data = est_temp, aes(x = Year, ymin = L95, ymax = U95))
+  } else if (CI == 80) {
+    p <- p_temp + geom_ribbon(data = est_temp, aes(x = Year, ymin = L80, ymax = U80))
+  }
+  # If CI is neither 95 nor 80, or if CI == NA, no CI layer is added. 
+  # Additional modifications like fill color and transparency (alpha) can be adjusted as needed.
+}
+  return(p)
+}
+
+
+
+
+```
+
+
+```{r, include = T, warning=F}
+plot_cp(dat, est, iso_code = 4)
+plot_cp(dat, est, iso_code = 4, CI = NA)
+plot_cp(dat, est, iso_code = 404, CI = 80)
+
+
+```
+
+## Exercise 2: GitHub
+
+Create a repo on your GitHub. Commit and push your Rmd and knitted html to your repo. Paste the link to your GitHub repo below.
+
+
