@@ -45,13 +45,13 @@ est <- read_csv("est.csv")
 ```{r}
 # note: just adding _hw1 to the function name here to not get confused with the function 
 # that you will add to your package (which will be called plot_cp).
-plot_cp_hw1 <- function(est, iso_code) {
-  est2 <- est %>%
-    filter(iso == iso_code)
-  
 est <- est %>% 
   rename(iso_country = iso)
 est$iso_country <- as.integer(est$iso_country)
+
+plot_cp_hw1 <- function(est, iso_code) {
+  est2 <- est %>%
+    filter(iso_country == iso_code)
   
   est2 %>%
     ggplot(aes(x = Year, y = Median)) +
@@ -62,6 +62,7 @@ est$iso_country <- as.integer(est$iso_country)
     ) +
     labs(x = "Time", y = "Modern use (%)", title = est2$`Country or area`[1])
 }
+
 ```
 
 ```{r, include = T}
@@ -98,21 +99,30 @@ dat2 <- dat %>%
   filter(is_in_union == "Y") %>%
   mutate(contraceptive_use_modern = contraceptive_use_modern * 100)
 
-plot_cp <- function(est, dat, iso_code, CI = 95) {
-  
+plot_cp <- function(est, dat2, iso_code, CI = 95) {
   # Prepare  temp est data to get country
   est_temp <- est %>%
     filter(iso_country == iso_code)
   
   # Prepare temp observed data
-  dat_temp <- dat2 %>% 
+  dat_temp <- dat2 %>%
     filter(division_numeric_code == iso_code)
   
   # Start plot with estimates (lines)
   p_temp <- ggplot() +
-    geom_line(data = est_temp, aes(x = Year, y = Median), color = "blue") +
-    geom_point(data = dat_temp, aes(x = ref_time, y = contraceptive_use_modern), color = "red") +
-    labs(x = "Time", y = "Modern use (%)", title = paste("mCPR in", est_temp$`Country or area`[1]))
+    geom_line(data = est_temp,
+              aes(x = Year, y = Median),
+              color = "blue") +
+    geom_point(
+      data = dat_temp,
+      aes(x = ref_time, y = contraceptive_use_modern),
+      color = "red"
+    ) +
+    labs(
+      x = "Time",
+      y = "Modern use (%)",
+      title = paste("mCPR in", est_temp$`Country or area`[1])
+    )
   
     # Conditional CI layers
 if (!is.na(CI)) {
