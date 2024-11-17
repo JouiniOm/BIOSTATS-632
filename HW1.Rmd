@@ -7,18 +7,12 @@ output: html_document
 ---
 
 # Summary
-
 We are going to produce an R package with functions with documentation, error messages, and tests (extra credit). The application is functionality to visualize and process data and estimates on family planning worldwide. Note that we already worked with the estimates in Intermediate R, HW1. Relevant code and functions from that HW are included in this Rmd in the section below, followed by the exercises for this HW. 
 
-
-
 ## What to hand in
-
 An R notebook called hw1_exercises.Rmd and associated knitted html that shows the function calls and output as displayed in the hw1 starter Rmd/pdf with example solutions, as well as the link to your GitHub repo.
 
-
 Grading: 20 points
-
 - 15 points for exercise 1
 - 5 points for exercise 2
 
@@ -31,7 +25,6 @@ library(devtools)
 #knitr::opts_chunk$set(include = FALSE)
 
 setwd("~/Studium/Public Health Studium/5. Semester UMass/R III Course")
-
 ```
 
 # Starter code for visualizing family planning estimates (from Intermediate R, HW1)
@@ -58,10 +51,8 @@ plot_cp_hw1 <- function(est, iso_code) {
   
 est <- est %>% 
   rename(iso_country = iso)
-
 est$iso_country <- as.integer(est$iso_country)
   
-
   est2 %>%
     ggplot(aes(x = Year, y = Median)) +
     geom_line() +
@@ -79,13 +70,10 @@ plot_cp_hw1(est, iso_code = 4)
 
 
 # HW1 exercises
-
 In HW2, we set up a package and add the plotting function, called `plot_cp'. We will add observed mCPR data (from surveys) and some other functionality to the visualization.
 
 
 ## Exercise 1: extend function plot_cp() to also plot observed data
-
-
 The data set csv file contraceptive_use.csv contains observed mCPR values. Relevant variable info is as follows:
 
 - contraceptive_use_modern = observed mCPR 
@@ -109,8 +97,6 @@ dat2 <- dat %>%
   mutate(ref_time =  (start_date + end_date)/2) %>% 
   filter(is_in_union == "Y") %>%
   mutate(contraceptive_use_modern = contraceptive_use_modern * 100)
-
-
 
 plot_cp <- function(est, dat, iso_code, CI = 95) {
   
@@ -140,10 +126,6 @@ if (!is.na(CI)) {
 }
   return(p)
 }
-
-
-
-
 ```
 
 
@@ -151,12 +133,12 @@ if (!is.na(CI)) {
 plot_cp(dat, est, iso_code = 4)
 plot_cp(dat, est, iso_code = 4, CI = NA)
 plot_cp(dat, est, iso_code = 404, CI = 80)
-
-
 ```
 
 ## Exercise 2: GitHub
 
 Create a repo on your GitHub. Commit and push your Rmd and knitted html to your repo. Paste the link to your GitHub repo below.
+
+[Github-Link]https://github.com/JouiniOm/BIOSTATS-632/blob/main/HW1.Rmd
 
 
