@@ -58,8 +58,7 @@ plot_cp_hw1 <- function(est, iso_code) {
     geom_line() +
     geom_smooth(
       stat = "identity",
-      aes(ymax = U95, ymin = L95)
-    ) +
+      aes(ymax = U95, ymin = L95)) +
     labs(x = "Time", y = "Modern use (%)", title = est2$`Country or area`[1])
 }
 
@@ -99,7 +98,7 @@ dat2 <- dat %>%
   filter(is_in_union == "Y") %>%
   mutate(contraceptive_use_modern = contraceptive_use_modern * 100)
 
-plot_cp <- function(est, dat2, iso_code, CI = 95) {
+plot_cp <- function(dat2,est, iso_code, CI = 95) {
   # Prepare  temp est data to get country
   est_temp <- est %>%
     filter(iso_country == iso_code)
@@ -127,9 +126,11 @@ plot_cp <- function(est, dat2, iso_code, CI = 95) {
     # Conditional CI layers
 if (!is.na(CI)) {
   if (CI == 95) {
-    p <- p_temp + geom_ribbon(data = est_temp, aes(x = Year, ymin = L95, ymax = U95))
+    p <- p_temp + 
+      geom_ribbon(data = est_temp, aes(x = Year, ymin = L95, ymax = U95, alpha = 0.3))
   } else if (CI == 80) {
-    p <- p_temp + geom_ribbon(data = est_temp, aes(x = Year, ymin = L80, ymax = U80))
+    p <- p_temp + 
+      geom_ribbon(data = est_temp, aes(x = Year, ymin = L80, ymax = U80, alpha = 0.3))
   }
   # If CI is neither 95 nor 80, or if CI == NA, no CI layer is added. 
   # Additional modifications like fill color and transparency (alpha) can be adjusted as needed.
@@ -140,9 +141,9 @@ if (!is.na(CI)) {
 
 
 ```{r, include = T, warning=F}
-plot_cp(dat, est, iso_code = 4)
-plot_cp(dat, est, iso_code = 4, CI = NA)
-plot_cp(dat, est, iso_code = 404, CI = 80)
+plot_cp(dat2, est, iso_code = 4)
+plot_cp(dat2, est, iso_code = 4, CI = NA)
+plot_cp(dat2, est, iso_code = 404, CI = 80)
 ```
 
 ## Exercise 2: GitHub
