@@ -114,27 +114,22 @@ plot_cp <- function(dat2,est, iso_code, CI = 95) {
               color = "blue") +
     geom_point(
       data = dat_temp,
-      aes(x = ref_time, y = contraceptive_use_modern),
-      color = "red"
-    ) +
+      aes(x = ref_time, y = contraceptive_use_modern)) +
     labs(
       x = "Time",
       y = "Modern use (%)",
-      title = paste("mCPR in", est_temp$`Country or area`[1])
-    )
+      title = paste("mCPR in", est_temp$`Country or area`[1]))
   
     # Conditional CI layers
-if (!is.na(CI)) {
-  if (CI == 95) {
-    p <- p_temp + 
-      geom_ribbon(data = est_temp, aes(x = Year, ymin = L95, ymax = U95, alpha = 0.3))
-  } else if (CI == 80) {
-    p <- p_temp + 
-      geom_ribbon(data = est_temp, aes(x = Year, ymin = L80, ymax = U80, alpha = 0.3))
-  }
-  # If CI is neither 95 nor 80, or if CI == NA, no CI layer is added. 
-  # Additional modifications like fill color and transparency (alpha) can be adjusted as needed.
-}
+if (CI == 80) {
+  p <- p_temp + geom_smooth(data = est_temp, stat = "identity", aes(x= Year, y = Median,  ymin = L80, ymax = U80), alpha = 0.3)
+} else if (is.na(CI)) {
+  p <- p_temp 
+} else { 
+  p <- p_temp + geom_smooth(data = est_temp, stat = "identity", aes(x= Year, y = Median, ymin = L95, ymax = U95), alpha = 0.3)
+} 
+
+  
   return(p)
 }
 ```
