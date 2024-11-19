@@ -12,6 +12,10 @@ We are going to produce an R package with functions with documentation, error me
 ## What to hand in
 An R notebook called hw1_exercises.Rmd and associated knitted html that shows the function calls and output as displayed in the hw1 starter Rmd/pdf with example solutions, as well as the link to your GitHub repo.
 
+## Contributions
+Sofia, Sarah & Sylvain
+AI was used for suggestions and debugging.
+
 Grading: 20 points
 - 15 points for exercise 1
 - 5 points for exercise 2
@@ -109,9 +113,6 @@ plot_cp <- function(dat2,est, iso_code, CI = 95) {
   
   # Start plot with estimates (lines)
   p_temp <- ggplot() +
-    geom_line(data = est_temp,
-              aes(x = Year, y = Median),
-              color = "blue") +
     geom_point(
       data = dat_temp,
       aes(x = ref_time, y = contraceptive_use_modern)) +
@@ -122,16 +123,23 @@ plot_cp <- function(dat2,est, iso_code, CI = 95) {
   
     # Conditional CI layers
   if (is.na(CI)== T) {
-  p <- p_temp 
+  p <- p_temp +
+        geom_line(data = est_temp,
+              aes(x = Year, y = Median))
 } 
   else if (CI == 80) {
-  p <- p_temp + geom_smooth(data = est_temp, stat = "identity", aes(x= Year, y = Median,  ymin = L80, ymax = U80), alpha = 0.3)
+  p <- p_temp + geom_smooth(data = est_temp, stat = "identity", aes(x= Year, y = Median,  ymin = L80, ymax = U80), alpha = 0.3) +
+        geom_line(data = est_temp,
+              aes(x = Year, y = Median),
+              color = "blue")
 } 
   else { 
-  p <- p_temp + geom_smooth(data = est_temp, stat = "identity", aes(x= Year, y = Median, ymin = L95, ymax = U95), alpha = 0.3)
+  p <- p_temp + geom_smooth(data = est_temp, stat = "identity", aes(x= Year, y = Median, ymin = L95, ymax = U95), alpha = 0.3) + 
+    geom_line(data = est_temp,
+              aes(x = Year, y = Median),
+              color = "blue")
+    
 } 
-
-  
   return(p)
 }
 ```
