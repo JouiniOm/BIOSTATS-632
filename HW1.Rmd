@@ -121,11 +121,13 @@ plot_cp <- function(dat2,est, iso_code, CI = 95) {
       title = paste("mCPR in", est_temp$`Country or area`[1]))
   
     # Conditional CI layers
-if (CI == 80) {
-  p <- p_temp + geom_smooth(data = est_temp, stat = "identity", aes(x= Year, y = Median,  ymin = L80, ymax = U80), alpha = 0.3)
-} else if (is.na(CI)) {
+  if (is.na(CI)== T) {
   p <- p_temp 
-} else { 
+} 
+  else if (CI == 80) {
+  p <- p_temp + geom_smooth(data = est_temp, stat = "identity", aes(x= Year, y = Median,  ymin = L80, ymax = U80), alpha = 0.3)
+} 
+  else { 
   p <- p_temp + geom_smooth(data = est_temp, stat = "identity", aes(x= Year, y = Median, ymin = L95, ymax = U95), alpha = 0.3)
 } 
 
